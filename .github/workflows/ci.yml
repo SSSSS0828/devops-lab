@@ -76,16 +76,20 @@ jobs:
           ssh \
             -i ~/.ssh/deploy_key \
             "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
-            '
+          '
               set -e
 
               cd ~/devops-lab
 
-              git pull origin main
+              git fetch origin
+
+              git checkout --detach ${{ github.sha }}
 
               docker compose up -d --build
 
-              docker compose ps
+              sleep 5
 
               curl -fsS http://127.0.0.1/health
-            '
+
+              echo "Deployed commit: ${{ github.sha }}"
+          '
