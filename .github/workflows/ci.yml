@@ -1,3 +1,7 @@
+permissions:
+  contents: read
+  packages: write
+
 # 工作流名字
 name: DevOps CI
 # 触发条件
@@ -53,9 +57,36 @@ jobs:
         if: always()
         run: docker compose down
 
+  publish:
+    needs: build-test
+
+    # 只有 push main 才构建推送镜像
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/sssss0828/devops-api:${{ github.sha }}
+            ghcr.io/sssss0828/devops-api:latest
 
   deploy:
-    needs: build-test
+    needs: publish
 
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
