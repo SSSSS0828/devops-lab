@@ -116,7 +116,13 @@ jobs:
 
               git checkout --detach ${{ github.sha }}
 
-              docker compose up -d --build
+              export API_IMAGE="ghcr.io/sssss0828/devops-api:${{ github.sha }}"
+
+              docker compose pull api
+
+              docker compose up -d --no-build
+
+              curl -fsS http://127.0.0.1/health
 
               sleep 5
 

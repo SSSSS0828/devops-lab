@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: devops-api:latest
+    image: ${API_IMAGE:-devops-api:latest}
     container_name: devops-api
 
     healthcheck:
