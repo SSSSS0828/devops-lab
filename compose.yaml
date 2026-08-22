@@ -46,3 +46,20 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: devops-grafana
+
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana-data:
