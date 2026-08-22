@@ -112,6 +112,10 @@ jobs:
 
               cd /srv/devops-lab
 
+              # 记录当前线上版本，用于部署失败后的回滚
+              PREVIOUS_SHA=$(git rev-parse HEAD)
+              PREVIOUS_IMAGE=$(docker inspect devops-api --format "{{.Config.Image}}")
+
               git fetch origin
 
               git checkout --detach ${{ github.sha }}
@@ -122,11 +126,34 @@ jobs:
 
               docker compose up -d --no-build
 
-              curl -fsS http://127.0.0.1/health
+              # 最多等待约 60 秒检查新版本
+              DEPLOY_OK=false
 
-              sleep 5
+              for i in {1..12}; do
+                if curl -fsS http://127.0.0.1/health >/dev/null; then
+                  DEPLOY_OK=true
+                  break
+                fi
 
-              curl -fsS http://127.0.0.1/health
+                echo "Waiting for application health check..."
+                sleep 5
+              done
 
-              echo "Deployed commit: ${{ github.sha }}"
+              # 新版本不健康：恢复旧 Commit + 旧镜像
+              if [ "$DEPLOY_OK" != "true" ]; then
+                echo "Deployment failed, rolling back..."
+
+                git checkout --detach "$PREVIOUS_SHA"
+                export API_IMAGE="$PREVIOUS_IMAGE"
+
+                docker compose up -d --no-build
+
+                sleep 5
+                curl -fsS http://127.0.0.1/health
+
+                echo "Rollback completed"
+                exit 1
+              fi
+
+              echo "Deployment successful: ${{ github.sha }}"
           '
