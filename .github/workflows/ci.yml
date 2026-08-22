@@ -110,7 +110,7 @@ jobs:
           '
               set -e
 
-              cd ~/devops-lab
+              cd /srv/devops-lab
 
               git fetch origin
 
