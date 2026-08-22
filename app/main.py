@@ -6,7 +6,8 @@ app = FastAPI()
 def index():
     return {
         "service": "devops-lab",
-        "status": "ok"
+        "status": "ok",
+        "version": "v3"
     }
 
 @app.get("/health")
