@@ -1,0 +1,54 @@
+# 工作流名字
+name: DevOps CI
+# 触发条件
+on:
+  # push
+  push:
+    branches:
+      - main
+  # 合并请求
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # job 名字
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        # 拉代码到虚拟机中
+        uses: actions/checkout@v4
+
+      - name: Validate Compose
+        ## 校验语法
+        run: docker compose config
+
+      - name: Build images
+        # 构建镜像
+        run: docker compose build
+
+      - name: Start services
+        # 启动
+        run: docker compose up -d
+
+      - name: Wait and test
+        run: |
+          for i in {1..12}; do
+            if curl -fsS http://127.0.0.1/health; then
+              echo "Service is healthy"
+              exit 0
+            fi
+
+            echo "Waiting for service..."
+            sleep 5
+          done
+
+          docker compose ps
+          docker compose logs
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down
