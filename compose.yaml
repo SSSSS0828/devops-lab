@@ -3,8 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+
     image: ${API_IMAGE:-devops-api:latest}
     container_name: devops-api
+
+    environment:
+      APP_ENV: ${APP_ENV:-development}
 
     healthcheck:
       test:
@@ -12,7 +16,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
         ]
       interval: 10s
       timeout: 3s
@@ -47,7 +51,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-
 
   grafana:
     image: grafana/grafana:latest

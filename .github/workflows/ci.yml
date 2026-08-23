@@ -121,9 +121,9 @@ jobs:
               git checkout --detach ${{ github.sha }}
 
               export API_IMAGE="ghcr.io/sssss0828/devops-api:${{ github.sha }}"
+              export APP_ENV="${{ secrets.APP_ENV }}"
 
               docker compose pull api
-
               docker compose up -d --no-build
 
               # 最多等待约 60 秒检查新版本
