@@ -14,7 +14,4 @@ def index():
 
 @app.get("/health")
 def health():
-    raise HTTPException(
-        status_code=500,
-        detail="deployment test failure"
-    )
+    return {"status": "healthy"}
